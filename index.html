@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Бесплатный калькулятор себестоимости кондитерских изделий: ингредиенты, упаковка, труд и наценка — всё в одном месте.">
+  <title>Сладкий Баланс — калькулятор себестоимости</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+
+      --bg-page: #f8f0ec;
+      --text-main: #2b2b2b;
+      --bg-card: #ffffff;
+      --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.08);
+
+      --color-title: #5a2d1f;
+      --color-muted: #666666;
+      --color-label: #444444;
+
+      --bg-section: #fffaf7;
+      --border-section: #eadbd2;
+      --color-section-title: #6b3a2b;
+
+      --bg-input: #ffffff;
+      --border-input: #d8c5ba;
+      --border-input-focus: #9b5c45;
+
+      --bg-add-btn: #7b4a38;
+      --bg-add-btn-hover: #5f382a;
+      --bg-calculate-btn: #5a2d1f;
+      --bg-calculate-btn-hover: #3f1e15;
+      --bg-reset-btn: #c7a18f;
+      --bg-reset-btn-hover: #a98170;
+
+      --bg-error: #ffe0e0;
+      --color-error: #8a1f1f;
+
+      --bg-result: #f0e2d8;
+      --color-result-title: #4a2419;
+      --border-result-line: #d6bfb0;
+
+      --bg-note: #fff3cd;
+      --color-note: #5d4700;
+
+      --bg-theme-btn: #5a2d1f;
+      --bg-theme-btn-hover: #3f1e15;
+      --shadow-theme-btn: 0 4px 18px rgba(0, 0, 0, 0.18);
+
+      --accent: #9b5c45;
+      --accent-light: #f0e2d8;
+      --header-bg: rgba(255, 255, 255, 0.92);
+      --header-border: #eadbd2;
+
+      --bg-gradient-1: #f8f0ec;
+      --bg-gradient-2: #f5e6dc;
+      --bg-gradient-3: #fde8d4;
+      --bg-gradient-4: #edd5c8;
+      --shadow-card-hover: 0 16px 40px rgba(90, 45, 31, 0.14);
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+
+      --bg-page: #1a1412;
+      --text-main: #e8dfd9;
+      --bg-card: #2a211e;
+      --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.45);
+
+      --color-title: #e8b89a;
+      --color-muted: #a89a94;
+      --color-label: #c4b5ad;
+
+      --bg-section: #332824;
+      --border-section: #4a3d36;
+      --color-section-title: #d4a088;
+
+      --bg-input: #3a2f2a;
+      --border-input: #5a4a42;
+      --border-input-focus: #c47a5a;
+
+      --bg-add-btn: #8b5a45;
+      --bg-add-btn-hover: #a66b52;
+      --bg-calculate-btn: #7b4a38;
+      --bg-calculate-btn-hover: #9b5c45;
+      --bg-reset-btn: #6b5348;
+      --bg-reset-btn-hover: #826458;
+
+      --bg-error: #4a2525;
+      --color-error: #f5a8a8;
+
+      --bg-result: #3d322c;
+      --color-result-title: #e8c4b0;
+      --border-result-line: #5a4a42;
+
+      --bg-note: #4a3d20;
+      --color-note: #f0d78c;
+
+      --bg-theme-btn: #c47a5a;
+      --bg-theme-btn-hover: #d49272;
+      --shadow-theme-btn: 0 4px 18px rgba(0, 0, 0, 0.5);
+
+      --accent: #c47a5a;
+      --accent-light: #3d322c;
+      --header-bg: rgba(26, 20, 18, 0.92);
+      --header-border: #4a3d36;
+
+      --bg-gradient-1: #1a1412;
+      --bg-gradient-2: #2a1f1a;
+      --bg-gradient-3: #1e1815;
+      --bg-gradient-4: #322018;
+      --shadow-card-hover: 0 16px 40px rgba(0, 0, 0, 0.55);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes cardEnter {
+      from {
+        opacity: 0;
+        transform: translateY(28px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes cardFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(
+        -45deg,
+        var(--bg-gradient-1),
+        var(--bg-gradient-2),
+        var(--bg-gradient-3),
+        var(--bg-gradient-4)
+      );
+      background-size: 400% 400%;
+      animation: gradientShift 18s ease infinite;
+      color: var(--text-main);
+      transition: color 0.3s ease;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 24px;
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--header-border);
+      backdrop-filter: blur(10px);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--color-title);
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .logo__icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--bg-calculate-btn), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .site-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-link {
+      border: none;
+      background: transparent;
+      color: var(--color-label);
+      font-size: 15px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .nav-link:hover,
+    .nav-link.is-active {
+      background: var(--accent-light);
+      color: var(--color-title);
+    }
+
+    .nav-cta {
+      background: var(--bg-calculate-btn);
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: var(--bg-calculate-btn-hover);
+    }
+
+    .page-view {
+      display: none;
+    }
+
+    .page-view.is-active {
+      display: block;
+    }
+
+    /* ——— Лендинг ——— */
+
+    .landing {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 40px;
+      align-items: center;
+      padding: 48px 0 56px;
+    }
+
+    .hero__badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--accent-light);
+      color: var(--color-title);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      margin: 0 0 16px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.2;
+      color: var(--color-title);
+      text-align: left;
+    }
+
+    .hero__text {
+      margin: 0 0 28px;
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--color-muted);
+    }
+
+    .hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      background: var(--bg-calculate-btn);
+      color: #ffffff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--bg-calculate-btn-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--color-title);
+      border: 2px solid var(--border-section);
+      padding: 12px 26px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .hero__visual {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-section);
+      transition: box-shadow 0.35s ease, border-color 0.35s ease, transform 0.35s ease;
+    }
+
+    #viewLanding.is-active .hero__visual {
+      animation: cardEnter 0.7s ease 0.35s backwards, cardFloat 5s ease-in-out 1.2s infinite;
+    }
+
+    .hero__visual:hover {
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--accent);
+      animation-play-state: paused, paused;
+      transform: translateY(-4px);
+    }
+
+    .hero__visual-title {
+      margin: 0 0 16px;
+      font-size: 15px;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .hero__stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-section);
+      font-size: 15px;
+    }
+
+    .hero__stat:last-child {
+      border-bottom: none;
+    }
+
+    .hero__stat-value {
+      font-weight: 700;
+      color: var(--color-title);
+    }
+
+    .hero__stat-value--highlight {
+      font-size: 20px;
+      color: var(--accent);
+    }
+
+    .section-block {
+      margin-bottom: 56px;
+    }
+
+    .section-block__title {
+      text-align: center;
+      font-size: 28px;
+      color: var(--color-title);
+      margin: 0 0 12px;
+    }
+
+    .section-block__subtitle {
+      text-align: center;
+      color: var(--color-muted);
+      margin: 0 auto 36px;
+      max-width: 560px;
+      line-height: 1.6;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-section);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1),
+                  box-shadow 0.35s ease,
+                  border-color 0.35s ease;
+    }
+
+    #viewLanding.is-active .feature-card {
+      animation: cardEnter 0.65s ease backwards;
+    }
+
+    #viewLanding.is-active .feature-card:nth-child(1) { animation-delay: 0.1s; }
+    #viewLanding.is-active .feature-card:nth-child(2) { animation-delay: 0.2s; }
+    #viewLanding.is-active .feature-card:nth-child(3) { animation-delay: 0.3s; }
+    #viewLanding.is-active .feature-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .feature-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--accent);
+    }
+
+    .feature-card__icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+      display: inline-block;
+      transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+
+    .feature-card:hover .feature-card__icon {
+      transform: scale(1.15) rotate(-4deg);
+    }
+
+    .feature-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: var(--color-title);
+    }
+
+    .feature-card p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--color-muted);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .step-card {
+      text-align: center;
+      padding: 20px 16px;
+      background: var(--bg-section);
+      border: 1px solid var(--border-section);
+      border-radius: 16px;
+      transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1),
+                  box-shadow 0.35s ease,
+                  border-color 0.35s ease,
+                  background 0.35s ease;
+    }
+
+    #viewLanding.is-active .step-card {
+      animation: cardEnter 0.6s ease backwards;
+    }
+
+    #viewLanding.is-active .step-card:nth-child(1) { animation-delay: 0.15s; }
+    #viewLanding.is-active .step-card:nth-child(2) { animation-delay: 0.25s; }
+    #viewLanding.is-active .step-card:nth-child(3) { animation-delay: 0.35s; }
+    #viewLanding.is-active .step-card:nth-child(4) { animation-delay: 0.45s; }
+
+    .step-card:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--accent);
+      background: var(--bg-card);
+    }
+
+    .step-card__num {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: var(--bg-calculate-btn);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1),
+                  box-shadow 0.35s ease;
+    }
+
+    .step-card:hover .step-card__num {
+      transform: scale(1.12);
+      box-shadow: 0 4px 14px rgba(90, 45, 31, 0.35);
+    }
+
+    .step-card h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      color: var(--color-title);
+    }
+
+    .step-card p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--color-muted);
+    }
+
+    .cta-block {
+      text-align: center;
+      background: linear-gradient(135deg, var(--bg-calculate-btn), var(--accent));
+      color: #ffffff;
+      border-radius: 24px;
+      padding: 48px 32px;
+    }
+
+    .cta-block h2 {
+      margin: 0 0 12px;
+      font-size: 26px;
+    }
+
+    .cta-block p {
+      margin: 0 auto 24px;
+      max-width: 480px;
+      line-height: 1.6;
+      opacity: 0.92;
+    }
+
+    .cta-block .btn-primary {
+      background: #ffffff;
+      color: var(--bg-calculate-btn);
+    }
+
+    .cta-block .btn-primary:hover {
+      background: var(--accent-light);
+      color: var(--color-title);
+    }
+
+    .site-footer {
+      text-align: center;
+      padding: 28px 20px;
+      border-top: 1px solid var(--header-border);
+      color: var(--color-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .site-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .site-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ——— Калькулятор ——— */
+
+    .calculator-page {
+      padding: 20px;
+    }
+
+    .calculator {
+      max-width: 1050px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-section);
+      transition: background 0.3s ease, box-shadow 0.35s ease, border-color 0.35s ease, transform 0.35s ease;
+    }
+
+    #viewCalculator.is-active .calculator {
+      animation: cardEnter 0.7s ease 0.1s backwards;
+    }
+
+    .calculator:hover {
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--accent);
+    }
+
+    .calculator h1 {
+      text-align: center;
+      color: var(--color-title);
+      margin-bottom: 10px;
+      font-size: clamp(22px, 3vw, 28px);
+    }
+
+    .description {
+      text-align: center;
+      color: var(--color-muted);
+      line-height: 1.5;
+      margin-bottom: 25px;
+    }
+
+    .section {
+      background: var(--bg-section);
+      border: 1px solid var(--border-section);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 22px;
+      transition: background 0.3s ease, border-color 0.3s ease,
+                  transform 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    #viewCalculator.is-active .section {
+      animation: cardEnter 0.55s ease backwards;
+    }
+
+    #viewCalculator.is-active .section:nth-child(3) { animation-delay: 0.15s; }
+    #viewCalculator.is-active .section:nth-child(4) { animation-delay: 0.22s; }
+    #viewCalculator.is-active .section:nth-child(5) { animation-delay: 0.29s; }
+    #viewCalculator.is-active .section:nth-child(6) { animation-delay: 0.36s; }
+    #viewCalculator.is-active .section:nth-child(7) { animation-delay: 0.43s; }
+    #viewCalculator.is-active .section:nth-child(8) { animation-delay: 0.5s; }
+
+    .section:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--accent);
+    }
+
+    .section h2 {
+      margin-top: 0;
+      color: var(--color-section-title);
+      font-size: 21px;
+    }
+
+    .section h3 {
+      color: var(--color-section-title);
+      margin-bottom: 10px;
+      margin-top: 18px;
+      font-size: 18px;
+    }
+
+    .hint {
+      color: var(--color-muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .ingredient-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .cost-row {
+      display: grid;
+      grid-template-columns: 1fr 160px auto;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .cost-total {
+      margin: 8px 0 16px;
+      color: var(--color-section-title);
+      font-weight: bold;
+    }
+
+    .help-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .help-btn {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border-radius: 50%;
+      background: var(--bg-add-btn);
+      color: #ffffff;
+      font-size: 14px;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    .help-btn:hover {
+      background: var(--bg-add-btn-hover);
+    }
+
+    .help-box {
+      display: none;
+      margin: 8px 0 12px;
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--bg-note);
+      color: var(--color-note);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .help-box.is-open {
+      display: block;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: var(--color-label);
+    }
+
+    input,
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px;
+      border: 1px solid var(--border-input);
+      border-radius: 10px;
+      font-size: 15px;
+      background: var(--bg-input);
+      color: var(--text-main);
+      transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--border-input-focus);
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    .add-btn {
+      background: var(--bg-add-btn);
+      color: #ffffff;
+      margin-top: 10px;
+    }
+
+    .add-btn:hover {
+      background: var(--bg-add-btn-hover);
+    }
+
+    .delete-btn {
+      background: #d9534f;
+      color: #ffffff;
+      padding: 10px 13px;
+    }
+
+    .delete-btn:hover {
+      background: #b63d39;
+    }
+
+    .calculate-btn {
+      width: 100%;
+      background: var(--bg-calculate-btn);
+      color: #ffffff;
+      font-size: 18px;
+      padding: 16px;
+      margin-top: 5px;
+    }
+
+    .calculate-btn:hover {
+      background: var(--bg-calculate-btn-hover);
+    }
+
+    .reset-btn {
+      width: 100%;
+      background: var(--bg-reset-btn);
+      color: #ffffff;
+      font-size: 16px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .reset-btn:hover {
+      background: var(--bg-reset-btn-hover);
+    }
+
+    .error {
+      display: none;
+      margin-top: 15px;
+      padding: 15px;
+      background: var(--bg-error);
+      color: var(--color-error);
+      border-radius: 12px;
+      line-height: 1.5;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .result {
+      display: none;
+      margin-top: 25px;
+      padding: 22px;
+      background: var(--bg-result);
+      border-radius: 16px;
+      transition: background 0.3s ease;
+    }
+
+    .result h2 {
+      margin-top: 0;
+      color: var(--color-result-title);
+    }
+
+    .result-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-result-line);
+      font-size: 17px;
+    }
+
+    .result-line:last-child {
+      border-bottom: none;
+    }
+
+    .important-result {
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--color-result-title);
+    }
+
+    .note {
+      margin-top: 20px;
+      padding: 15px;
+      background: var(--bg-note);
+      border-radius: 12px;
+      color: var(--color-note);
+      line-height: 1.5;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 1000;
+      width: 56px;
+      height: 56px;
+      padding: 0;
+      border-radius: 50%;
+      background: var(--bg-theme-btn);
+      color: #ffffff;
+      font-size: 24px;
+      line-height: 1;
+      box-shadow: var(--shadow-theme-btn);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-theme-btn-hover);
+      transform: scale(1.08);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.96);
+    }
+
+    [data-theme="dark"] .theme-toggle__icon--light {
+      display: inline;
+    }
+
+    [data-theme="dark"] .theme-toggle__icon--dark {
+      display: none;
+    }
+
+    :root:not([data-theme="dark"]) .theme-toggle__icon--light {
+      display: none;
+    }
+
+    :root:not([data-theme="dark"]) .theme-toggle__icon--dark {
+      display: inline;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body {
+        animation: none;
+        background: var(--bg-page);
+      }
+
+      #viewLanding.is-active .hero__visual,
+      #viewLanding.is-active .feature-card,
+      #viewLanding.is-active .step-card,
+      #viewCalculator.is-active .calculator,
+      #viewCalculator.is-active .section {
+        animation: none;
+      }
+
+      .feature-card:hover,
+      .step-card:hover,
+      .hero__visual:hover,
+      .section:hover {
+        transform: none;
+      }
+
+      .feature-card:hover .feature-card__icon,
+      .step-card:hover .step-card__num {
+        transform: none;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 32px 0 40px;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .site-nav .nav-link {
+        display: none;
+      }
+    }
+
+    @media (max-width: 800px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .ingredient-row,
+      .cost-row {
+        grid-template-columns: 1fr;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-section);
+      }
+
+      .theme-toggle {
+        right: 16px;
+        bottom: 16px;
+        width: 50px;
+        height: 50px;
+        font-size: 22px;
+      }
+
+      .result-line {
+        flex-direction: column;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem("konditer-calculator-theme");
+      if (savedTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
+</head>
+
+<body>
+
+  <header class="site-header">
+    <a href="#" class="logo" id="logoLink" aria-label="На главную">
+      <span class="logo__icon" aria-hidden="true">🎂</span>
+      <span>Сладкий Баланс</span>
+    </a>
+
+    <nav class="site-nav" aria-label="Основная навигация">
+      <button type="button" class="nav-link is-active" data-view="landing" id="navLanding">Главная</button>
+      <button type="button" class="nav-link" data-view="calculator" id="navCalculator">Калькулятор</button>
+      <button type="button" class="nav-cta" id="navCta">Начать расчёт</button>
+    </nav>
+  </header>
+
+  <!-- Лендинг -->
+  <main class="page-view is-active" id="viewLanding">
+    <div class="landing">
+
+      <section class="hero">
+        <div class="hero__content">
+          <span class="hero__badge">Бесплатно · Без регистрации</span>
+          <h1>Узнайте реальную себестоимость ваших десертов</h1>
+          <p class="hero__text">
+            Сладкий Баланс помогает домашним кондитерам и небольшим пекарням считать цену изделий честно: с учётом ингредиентов, упаковки, труда и наценки. Никаких таблиц в Excel — всё в одном окне.
+          </p>
+          <div class="hero__actions">
+            <button type="button" class="btn-primary" id="heroStartBtn">Открыть калькулятор</button>
+            <button type="button" class="btn-secondary" id="heroHowBtn">Как это работает</button>
+          </div>
+        </div>
+
+        <div class="hero__visual" aria-hidden="true">
+          <p class="hero__visual-title">Пример расчёта</p>
+          <div class="hero__stat">
+            <span>Шоколадный торт</span>
+            <span class="hero__stat-value">12 порций</span>
+          </div>
+          <div class="hero__stat">
+            <span>Ингредиенты</span>
+            <span class="hero__stat-value">1 840 ₽</span>
+          </div>
+          <div class="hero__stat">
+            <span>Работа (5 ч × 500 ₽)</span>
+            <span class="hero__stat-value">2 500 ₽</span>
+          </div>
+          <div class="hero__stat">
+            <span>Себестоимость партии</span>
+            <span class="hero__stat-value hero__stat-value--highlight">4 620 ₽</span>
+          </div>
+          <div class="hero__stat">
+            <span>Цена продажи (+30%)</span>
+            <span class="hero__stat-value hero__stat-value--highlight">6 010 ₽</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block" id="features">
+        <h2 class="section-block__title">Что умеет калькулятор</h2>
+        <p class="section-block__subtitle">Все расходы собраны в одном месте — от муки до бирки на коробке.</p>
+
+        <div class="features">
+          <article class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">🥚</div>
+            <h3>Ингредиенты по весу</h3>
+            <p>Укажите цену упаковки и сколько граммов ушло в рецепт — калькулятор сам посчитает долю стоимости.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">📦</div>
+            <h3>Упаковка и декор</h3>
+            <p>Коробки, ленты, топперы и прочие расходники — добавляйте позиции списком, итог обновляется автоматически.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">🏭</div>
+            <h3>Производственные расходы</h3>
+            <p>Коммунальные платежи, амортизация оборудования, запас на потери и прочие расходники — всё учитывается в себестоимости партии.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">🚗</div>
+            <h3>Транспортные расходы</h3>
+            <p>Доставка ингредиентов, поездка к клиенту, курьер или бензин — добавьте транспортные затраты, чтобы цена заказа была честной.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-block" id="howItWorks">
+        <h2 class="section-block__title">Как пользоваться</h2>
+        <p class="section-block__subtitle">Четыре простых шага — и вы знаете, сколько стоит ваш десерт.</p>
+
+        <div class="steps">
+          <article class="step-card">
+            <div class="step-card__num">1</div>
+            <h3>Опишите изделие</h3>
+            <p>Название, тип, количество штук и вес партии.</p>
+          </article>
+
+          <article class="step-card">
+            <div class="step-card__num">2</div>
+            <h3>Добавьте расходы</h3>
+            <p>Ингредиенты, упаковку, декор и производственные затраты.</p>
+          </article>
+
+          <article class="step-card">
+            <div class="step-card__num">3</div>
+            <h3>Учтите труд</h3>
+            <p>Часы работы и ставку за час — ваше время тоже стоит денег.</p>
+          </article>
+
+          <article class="step-card">
+            <div class="step-card__num">4</div>
+            <h3>Получите цену</h3>
+            <p>Себестоимость, цена за штуку и рекомендуемая продажная цена.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="cta-block">
+        <h2>Готовы посчитать свой заказ?</h2>
+        <p>Откройте калькулятор, заполните поля и нажмите «Рассчитать» — результат появится сразу. Данные сохраняются в браузере.</p>
+        <button type="button" class="btn-primary" id="ctaStartBtn">Перейти к калькулятору</button>
+      </section>
+
+    </div>
+
+    <footer class="site-footer">
+      <p>Сладкий Баланс — открытый инструмент для расчёта себестоимости кондитерских изделий.</p>
+      <p>Работает полностью в браузере, без отправки данных на сервер.</p>
+    </footer>
+  </main>
+
+  <!-- Калькулятор -->
+  <main class="page-view" id="viewCalculator">
+    <div class="calculator-page">
+      <div class="calculator">
+
+        <h1>Калькулятор себестоимости</h1>
+
+        <p class="description">
+          Введите ингредиенты, упаковку, производственные расходы, время работы и наценку. Калькулятор рассчитает себестоимость всей партии, одной штуки, 100 граммов и рекомендуемую цену продажи.
+        </p>
+
+        <div class="section">
+          <h2>1. Основная информация</h2>
+
+          <div class="form-grid">
+            <div>
+              <label for="productName">Название изделия</label>
+              <input type="text" id="productName" placeholder="Например: шоколадный торт">
+            </div>
+
+            <div>
+              <label for="productType">Тип изделия</label>
+              <select id="productType">
+                <option value="Торт">Торт</option>
+                <option value="Пирожные">Пирожные</option>
+                <option value="Капкейки">Капкейки</option>
+                <option value="Эклеры">Эклеры</option>
+                <option value="Трайфлы">Трайфлы</option>
+                <option value="Печенье">Печенье</option>
+                <option value="Зефир">Зефир</option>
+                <option value="Другое">Другое</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="quantity">Количество изделий в партии</label>
+              <input type="number" id="quantity" placeholder="Например: 1 для торта или 12 для капкейков">
+            </div>
+
+            <div>
+              <label for="weight">Общий вес партии в граммах</label>
+              <input type="number" id="weight" placeholder="Например: 1800">
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>2. Ингредиенты</h2>
+
+          <p class="hint">
+            Для каждого ингредиента укажите цену упаковки, вес упаковки и количество, которое ушло на изделие. Например: сливки стоят 320 рублей за 500 г, использовано 300 г.
+          </p>
+
+          <div id="ingredientsList">
+            <div class="ingredient-row">
+              <input type="text" placeholder="Название ингредиента" class="ingredient-name">
+              <input type="number" placeholder="Цена упаковки" class="ingredient-price">
+              <input type="number" placeholder="Вес упаковки, г" class="package-weight">
+              <input type="number" placeholder="Использовано, г" class="used-weight">
+              <button class="delete-btn" onclick="deleteIngredient(this)">×</button>
+            </div>
+          </div>
+
+          <button class="add-btn" onclick="addIngredient()">Добавить ингредиент</button>
+        </div>
+
+        <div class="section">
+          <h2>3. Упаковка и декор</h2>
+
+          <h3>Упаковка</h3>
+          <p class="hint">Добавляйте каждую позицию отдельно: коробка, подложка, капсулы, стаканчики и другие расходники.</p>
+
+          <div id="packagingItems"></div>
+
+          <button class="add-btn" type="button" onclick="addCostItem('packaging')">+ Добавить упаковку</button>
+
+          <p class="cost-total">
+            Итого упаковка: <span id="packagingTotal">0 руб.</span>
+          </p>
+
+          <h3>Декор</h3>
+          <p class="hint">Добавляйте каждую позицию отдельно: лента, бирка, свечи, топперы, посыпки и другой декор.</p>
+
+          <div id="decorItems"></div>
+
+          <button class="add-btn" type="button" onclick="addCostItem('decor')">+ Добавить декор</button>
+
+          <p class="cost-total">
+            Итого декор: <span id="decorTotal">0 руб.</span>
+          </p>
+        </div>
+
+        <div class="section">
+          <h2>4. Производственные расходы</h2>
+
+          <div class="form-grid">
+            <div>
+              <label for="utilitiesCost" class="help-label">
+                Коммунальные расходы на заказ
+                <button type="button" class="help-btn" onclick="toggleHelp('utilitiesHelp')">?</button>
+              </label>
+
+              <div class="help-box" id="utilitiesHelp">
+                Укажите примерную сумму расходов на электричество, воду и газ для данной партии изделий. Если точная сумма неизвестна, используйте среднее значение, которое обычно приходится на один заказ.
+              </div>
+
+              <input type="number" id="utilitiesCost" placeholder="Например: 100">
+            </div>
+
+            <div>
+              <label for="depreciationCost" class="help-label">
+                Амортизация оборудования на заказ
+                <button type="button" class="help-btn" onclick="toggleHelp('depreciationHelp')">?</button>
+              </label>
+
+              <div class="help-box" id="depreciationHelp">
+                Амортизация — это постепенный износ оборудования и инвентаря. Формула: стоимость оборудования ÷ срок службы ÷ предполагаемое количество заказов за этот период. Например: миксер стоит 20 000 ₽, за 3 года планируется около 720 заказов. 20 000 ÷ 720 = 28 ₽ на заказ.
+              </div>
+
+              <input type="number" id="depreciationCost" placeholder="Например: 50">
+            </div>
+
+            <div>
+              <label for="transportCost" class="help-label">
+                Транспортные расходы
+                <button type="button" class="help-btn" onclick="toggleHelp('transportHelp')">?</button>
+              </label>
+
+              <div class="help-box" id="transportHelp">
+                Укажите расходы, связанные с доставкой ингредиентов, доставкой заказа клиенту, услугами курьера, такси, личным транспортом, бензином и другими перемещениями.
+              </div>
+
+              <input type="number" id="transportCost" placeholder="Например: 200">
+            </div>
+
+            <div>
+              <label for="lossPercent" class="help-label">
+                Запас на потери (%)
+                <button type="button" class="help-btn" onclick="toggleHelp('lossHelp')">?</button>
+              </label>
+
+              <div class="help-box" id="lossHelp">
+                Запас на потери учитывает возможный перерасход ингредиентов, технологический брак и другие непредвиденные расходы. Для домашних кондитеров обычно используют значение от 3% до 10%.
+              </div>
+
+              <input type="number" id="lossPercent" placeholder="Например: 5">
+            </div>
+          </div>
+
+          <h3>
+            Прочие производственные расходы
+            <button type="button" class="help-btn" onclick="toggleHelp('otherExpensesHelp')">?</button>
+          </h3>
+
+          <div class="help-box" id="otherExpensesHelp">
+            Добавляйте расходы, которые не вошли в другие категории: перчатки, салфетки, кондитерские мешки, пергамент, моющие средства и другие расходные материалы.
+          </div>
+
+          <div id="otherExpenseItems"></div>
+
+          <button class="add-btn" type="button" onclick="addCostItem('otherExpense')">+ Добавить расход</button>
+
+          <p class="cost-total">
+            Итого прочие расходы: <span id="otherExpenseTotal">0 руб.</span>
+          </p>
+        </div>
+
+        <div class="section">
+          <h2>5. Работа кондитера</h2>
+
+          <div class="form-grid">
+            <div>
+              <label for="hours">Сколько часов ушло на работу</label>
+              <input type="number" id="hours" placeholder="Например: 6">
+            </div>
+
+            <div>
+              <label for="hourRate">Стоимость одного часа работы</label>
+              <input type="number" id="hourRate" placeholder="Например: 500">
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>6. Наценка и округление</h2>
+
+          <div class="form-grid">
+            <div>
+              <label for="markupPercent">Желаемая наценка в процентах</label>
+              <input type="number" id="markupPercent" placeholder="Например: 30">
+            </div>
+
+            <div>
+              <label for="roundStep">Округлить цену продажи до</label>
+              <select id="roundStep">
+                <option value="1">Не округлять</option>
+                <option value="10">10 рублей</option>
+                <option value="50">50 рублей</option>
+                <option value="100">100 рублей</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button class="calculate-btn" onclick="calculateCost()">Рассчитать себестоимость</button>
+        <button class="reset-btn" onclick="resetCalculator()">Очистить калькулятор</button>
+
+        <div class="error" id="errorBox"></div>
+
+        <div class="result" id="resultBox">
+          <h2>Результат расчёта</h2>
+
+          <div class="result-line">
+            <span>Изделие:</span>
+            <span id="resultProductName">-</span>
+          </div>
+
+          <div class="result-line">
+            <span>Тип изделия:</span>
+            <span id="resultProductType">-</span>
+          </div>
+
+          <div class="result-line">
+            <span>Стоимость ингредиентов:</span>
+            <span id="resultIngredientsCost">0 руб.</span>
+          </div>
+
+          <div class="result-line">
+            <span>Упаковка и декор:</span>
+            <span id="resultPackagingCost">0 руб.</span>
+          </div>
+
+          <div class="result-line">
+            <span>Производственные расходы:</span>
+            <span id="resultExtraCost">0 руб.</span>
+          </div>
+
+          <div class="result-line">
+            <span>Запас на потери:</span>
+            <span id="resultLossCost">0 руб.</span>
+          </div>
+
+          <div class="result-line">
+            <span>Стоимость работы:</span>
+            <span id="resultWorkCost">0 руб.</span>
+          </div>
+
+          <div class="result-line important-result">
+            <span>Себестоимость всей партии:</span>
+            <span id="resultTotalCost">0 руб.</span>
+          </div>
+
+          <div class="result-line">
+            <span>Себестоимость одной штуки:</span>
+            <span id="resultOneItemCost">0 руб.</span>
+          </div>
+
+          <div class="result-line">
+            <span>Себестоимость 100 г:</span>
+            <span id="resultOneHundredGramCost">0 руб.</span>
+          </div>
+
+          <div class="result-line important-result">
+            <span>Рекомендуемая цена продажи всей партии:</span>
+            <span id="resultSalePrice">0 руб.</span>
+          </div>
+
+          <div class="result-line">
+            <span>Рекомендуемая цена одной штуки:</span>
+            <span id="resultOneItemSalePrice">0 руб.</span>
+          </div>
+
+          <div class="result-line">
+            <span>Ориентировочная прибыль:</span>
+            <span id="resultProfit">0 руб.</span>
+          </div>
+        </div>
+
+        <div class="note">
+          Для торта можно указать количество изделий «1», а общий вес — вес торта. Для капкейков, пирожных или эклеров укажите количество штук в партии. Тогда калькулятор покажет себестоимость и цену одной штуки.
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <button
+    type="button"
+    class="theme-toggle"
+    id="themeToggle"
+    aria-label="Переключить тему оформления"
+    title="Переключить тему"
+  >
+    <span class="theme-toggle__icon theme-toggle__icon--light" aria-hidden="true">☀️</span>
+    <span class="theme-toggle__icon theme-toggle__icon--dark" aria-hidden="true">🌙</span>
+  </button>
+
+  <script>
+    var THEME_STORAGE_KEY = "konditer-calculator-theme";
+    var COST_ITEMS_STORAGE_KEY = "konditer-calculator-cost-items";
+
+    function showView(viewName) {
+      var landingView = document.getElementById("viewLanding");
+      var calculatorView = document.getElementById("viewCalculator");
+      var navLanding = document.getElementById("navLanding");
+      var navCalculator = document.getElementById("navCalculator");
+
+      if (viewName === "calculator") {
+        landingView.classList.remove("is-active");
+        calculatorView.classList.add("is-active");
+        navLanding.classList.remove("is-active");
+        navCalculator.classList.add("is-active");
+        history.replaceState(null, "", "#calculator");
+        window.scrollTo(0, 0);
+      } else {
+        calculatorView.classList.remove("is-active");
+        landingView.classList.add("is-active");
+        navCalculator.classList.remove("is-active");
+        navLanding.classList.add("is-active");
+        history.replaceState(null, "", "#");
+        window.scrollTo(0, 0);
+      }
+    }
+
+    function initNavigation() {
+      document.getElementById("navLanding").addEventListener("click", function() {
+        showView("landing");
+      });
+
+      document.getElementById("navCalculator").addEventListener("click", function() {
+        showView("calculator");
+      });
+
+      document.getElementById("navCta").addEventListener("click", function() {
+        showView("calculator");
+      });
+
+      document.getElementById("heroStartBtn").addEventListener("click", function() {
+        showView("calculator");
+      });
+
+      document.getElementById("ctaStartBtn").addEventListener("click", function() {
+        showView("calculator");
+      });
+
+      document.getElementById("heroHowBtn").addEventListener("click", function() {
+        document.getElementById("howItWorks").scrollIntoView({ behavior: "smooth" });
+      });
+
+      document.getElementById("logoLink").addEventListener("click", function(event) {
+        event.preventDefault();
+        showView("landing");
+      });
+
+      if (location.hash === "#calculator") {
+        showView("calculator");
+      }
+
+      window.addEventListener("hashchange", function() {
+        if (location.hash === "#calculator") {
+          showView("calculator");
+        } else {
+          showView("landing");
+        }
+      });
+    }
+
+    function addIngredient() {
+      const ingredientsList = document.getElementById("ingredientsList");
+
+      const row = document.createElement("div");
+      row.className = "ingredient-row";
+
+      row.innerHTML = `
+        <input type="text" placeholder="Название ингредиента" class="ingredient-name">
+        <input type="number" placeholder="Цена упаковки" class="ingredient-price">
+        <input type="number" placeholder="Вес упаковки, г" class="package-weight">
+        <input type="number" placeholder="Использовано, г" class="used-weight">
+        <button class="delete-btn" onclick="deleteIngredient(this)">×</button>
+      `;
+
+      ingredientsList.appendChild(row);
+      connectAutoCalculate(row);
+    }
+
+    function deleteIngredient(button) {
+      const row = button.parentElement;
+      row.remove();
+      autoCalculateIfResultShown();
+    }
+
+    function addCostItem(category, name = "", cost = "") {
+      const container = document.getElementById(category + "Items");
+
+      const row = document.createElement("div");
+      row.className = "cost-row";
+      row.dataset.category = category;
+
+      row.innerHTML = `
+        <input type="text" class="cost-name" placeholder="Название" value="${escapeHtmlAttribute(name)}">
+        <input type="number" class="cost-value" placeholder="Стоимость" value="${escapeHtmlAttribute(cost)}">
+        <button class="delete-btn" type="button" onclick="removeCostItem(this)">×</button>
+      `;
+
+      container.appendChild(row);
+      connectCostItemEvents(row);
+      updateCostTotals();
+      saveCostItems();
+      autoCalculateIfResultShown();
+    }
+
+    function removeCostItem(button) {
+      const row = button.parentElement;
+      row.remove();
+
+      ensureAtLeastOneCostRow("packaging");
+      ensureAtLeastOneCostRow("decor");
+      ensureAtLeastOneCostRow("otherExpense");
+
+      updateCostTotals();
+      saveCostItems();
+      autoCalculateIfResultShown();
+    }
+
+    function ensureAtLeastOneCostRow(category) {
+      const rows = document.querySelectorAll('.cost-row[data-category="' + category + '"]');
+
+      if (rows.length === 0) {
+        addCostItem(category);
+      }
+    }
+
+    function connectCostItemEvents(row) {
+      row.querySelectorAll("input").forEach(function(input) {
+        input.addEventListener("input", function() {
+          updateCostTotals();
+          saveCostItems();
+          autoCalculateIfResultShown();
+        });
+      });
+    }
+
+    function getCategoryTotal(category) {
+      const rows = document.querySelectorAll('.cost-row[data-category="' + category + '"]');
+      let total = 0;
+
+      rows.forEach(function(row) {
+        const costInput = row.querySelector(".cost-value");
+        total = total + (Number(costInput.value) || 0);
+      });
+
+      return total;
+    }
+
+    function getPackagingAndDecorTotal() {
+      return getCategoryTotal("packaging") + getCategoryTotal("decor");
+    }
+
+    function getProductionExpensesTotal() {
+      const utilitiesCost = Number(document.getElementById("utilitiesCost").value) || 0;
+      const depreciationCost = Number(document.getElementById("depreciationCost").value) || 0;
+      const transportCost = Number(document.getElementById("transportCost").value) || 0;
+      const otherProductionCost = getCategoryTotal("otherExpense");
+
+      return utilitiesCost + depreciationCost + transportCost + otherProductionCost;
+    }
+
+    function updateCostTotals() {
+      document.getElementById("packagingTotal").textContent = formatMoney(getCategoryTotal("packaging"));
+      document.getElementById("decorTotal").textContent = formatMoney(getCategoryTotal("decor"));
+
+      if (document.getElementById("otherExpenseTotal")) {
+        document.getElementById("otherExpenseTotal").textContent = formatMoney(getCategoryTotal("otherExpense"));
+      }
+    }
+
+    function saveCostItems() {
+      const data = {
+        packaging: [],
+        decor: [],
+        otherExpense: []
+      };
+
+      document.querySelectorAll('.cost-row[data-category="packaging"]').forEach(function(row) {
+        data.packaging.push({
+          name: row.querySelector(".cost-name").value,
+          cost: row.querySelector(".cost-value").value
+        });
+      });
+
+      document.querySelectorAll('.cost-row[data-category="decor"]').forEach(function(row) {
+        data.decor.push({
+          name: row.querySelector(".cost-name").value,
+          cost: row.querySelector(".cost-value").value
+        });
+      });
+
+      document.querySelectorAll('.cost-row[data-category="otherExpense"]').forEach(function(row) {
+        data.otherExpense.push({
+          name: row.querySelector(".cost-name").value,
+          cost: row.querySelector(".cost-value").value
+        });
+      });
+
+      localStorage.setItem(COST_ITEMS_STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadCostItems() {
+      const savedData = localStorage.getItem(COST_ITEMS_STORAGE_KEY);
+
+      if (!savedData) {
+        addCostItem("packaging", "Коробка", "");
+        addCostItem("decor", "Лента", "");
+        addCostItem("otherExpense", "Пергамент", "");
+        return;
+      }
+
+      try {
+        const data = JSON.parse(savedData);
+
+        if (data.packaging && data.packaging.length > 0) {
+          data.packaging.forEach(function(item) {
+            addCostItem("packaging", item.name, item.cost);
+          });
+        } else {
+          addCostItem("packaging", "Коробка", "");
+        }
+
+        if (data.decor && data.decor.length > 0) {
+          data.decor.forEach(function(item) {
+            addCostItem("decor", item.name, item.cost);
+          });
+        } else {
+          addCostItem("decor", "Лента", "");
+        }
+
+        if (data.otherExpense && data.otherExpense.length > 0) {
+          data.otherExpense.forEach(function(item) {
+            addCostItem("otherExpense", item.name, item.cost);
+          });
+        } else {
+          addCostItem("otherExpense", "Пергамент", "");
+        }
+
+        updateCostTotals();
+      } catch (error) {
+        addCostItem("packaging", "Коробка", "");
+        addCostItem("decor", "Лента", "");
+        addCostItem("otherExpense", "Пергамент", "");
+      }
+    }
+
+    function calculateCost() {
+      hideError();
+
+      const productName = document.getElementById("productName").value || "Без названия";
+      const productType = document.getElementById("productType").value;
+
+      const quantity = Number(document.getElementById("quantity").value);
+      const weight = Number(document.getElementById("weight").value);
+
+      if (quantity <= 0) {
+        showError("Укажите количество изделий в партии. Например: 1 для торта или 12 для капкейков.");
+        return;
+      }
+
+      let ingredientsCost = 0;
+
+      const ingredientRows = document.querySelectorAll(".ingredient-row");
+
+      ingredientRows.forEach(function(row) {
+        const price = Number(row.querySelector(".ingredient-price").value);
+        const packageWeight = Number(row.querySelector(".package-weight").value);
+        const usedWeight = Number(row.querySelector(".used-weight").value);
+
+        if (price > 0 && packageWeight > 0 && usedWeight > 0) {
+          const currentIngredientCost = price / packageWeight * usedWeight;
+          ingredientsCost = ingredientsCost + currentIngredientCost;
+        }
+      });
+
+      const lossPercent = Number(document.getElementById("lossPercent").value) || 0;
+
+      const hours = Number(document.getElementById("hours").value) || 0;
+      const hourRate = Number(document.getElementById("hourRate").value) || 0;
+
+      const markupPercent = Number(document.getElementById("markupPercent").value) || 0;
+      const roundStep = Number(document.getElementById("roundStep").value);
+
+      const packagingCost = getPackagingAndDecorTotal();
+      const extraCost = getProductionExpensesTotal();
+      const workCost = hours * hourRate;
+
+      const baseCostBeforeLoss = ingredientsCost + packagingCost + extraCost + workCost;
+      const lossCost = baseCostBeforeLoss * lossPercent / 100;
+
+      const totalCost = baseCostBeforeLoss + lossCost;
+
+      let salePrice = totalCost + totalCost * markupPercent / 100;
+      salePrice = roundToStep(salePrice, roundStep);
+
+      const oneItemCost = totalCost / quantity;
+      const oneItemSalePrice = salePrice / quantity;
+      const profit = salePrice - totalCost;
+
+      let oneHundredGramCost = 0;
+
+      if (weight > 0) {
+        oneHundredGramCost = totalCost / weight * 100;
+      }
+
+      document.getElementById("resultProductName").textContent = productName;
+      document.getElementById("resultProductType").textContent = productType;
+      document.getElementById("resultIngredientsCost").textContent = formatMoney(ingredientsCost);
+      document.getElementById("resultPackagingCost").textContent = formatMoney(packagingCost);
+      document.getElementById("resultExtraCost").textContent = formatMoney(extraCost);
+      document.getElementById("resultLossCost").textContent = formatMoney(lossCost);
+      document.getElementById("resultWorkCost").textContent = formatMoney(workCost);
+      document.getElementById("resultTotalCost").textContent = formatMoney(totalCost);
+      document.getElementById("resultOneItemCost").textContent = formatMoney(oneItemCost);
+
+      if (weight > 0) {
+        document.getElementById("resultOneHundredGramCost").textContent = formatMoney(oneHundredGramCost);
+      } else {
+        document.getElementById("resultOneHundredGramCost").textContent = "не указано";
+      }
+
+      document.getElementById("resultSalePrice").textContent = formatMoney(salePrice);
+      document.getElementById("resultOneItemSalePrice").textContent = formatMoney(oneItemSalePrice);
+      document.getElementById("resultProfit").textContent = formatMoney(profit);
+
+      document.getElementById("resultBox").style.display = "block";
+    }
+
+    function roundToStep(number, step) {
+      if (step <= 1) {
+        return number;
+      }
+
+      return Math.ceil(number / step) * step;
+    }
+
+    function formatMoney(number) {
+      return Math.round(number * 100) / 100 + " руб.";
+    }
+
+    function showError(message) {
+      const errorBox = document.getElementById("errorBox");
+      errorBox.textContent = message;
+      errorBox.style.display = "block";
+      document.getElementById("resultBox").style.display = "none";
+    }
+
+    function hideError() {
+      const errorBox = document.getElementById("errorBox");
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
+    }
+
+    function resetCalculator() {
+      document.getElementById("productName").value = "";
+      document.getElementById("productType").value = "Торт";
+      document.getElementById("quantity").value = "";
+      document.getElementById("weight").value = "";
+
+      document.getElementById("utilitiesCost").value = "";
+      document.getElementById("depreciationCost").value = "";
+      document.getElementById("transportCost").value = "";
+      document.getElementById("lossPercent").value = "";
+
+      document.getElementById("hours").value = "";
+      document.getElementById("hourRate").value = "";
+      document.getElementById("markupPercent").value = "";
+      document.getElementById("roundStep").value = "1";
+
+      const ingredientsList = document.getElementById("ingredientsList");
+
+      ingredientsList.innerHTML = `
+        <div class="ingredient-row">
+          <input type="text" placeholder="Название ингредиента" class="ingredient-name">
+          <input type="number" placeholder="Цена упаковки" class="ingredient-price">
+          <input type="number" placeholder="Вес упаковки, г" class="package-weight">
+          <input type="number" placeholder="Использовано, г" class="used-weight">
+          <button class="delete-btn" onclick="deleteIngredient(this)">×</button>
+        </div>
+      `;
+
+      document.getElementById("packagingItems").innerHTML = "";
+      document.getElementById("decorItems").innerHTML = "";
+      document.getElementById("otherExpenseItems").innerHTML = "";
+      localStorage.removeItem(COST_ITEMS_STORAGE_KEY);
+
+      addCostItem("packaging", "Коробка", "");
+      addCostItem("decor", "Лента", "");
+      addCostItem("otherExpense", "Пергамент", "");
+
+      updateCostTotals();
+      connectAllAutoCalculate();
+
+      hideError();
+      document.getElementById("resultBox").style.display = "none";
+    }
+
+    function autoCalculateIfResultShown() {
+      const resultBox = document.getElementById("resultBox");
+
+      if (resultBox.style.display === "block") {
+        calculateCost();
+      }
+    }
+
+    function connectAutoCalculate(element) {
+      element.querySelectorAll("input, select").forEach(function(field) {
+        field.addEventListener("input", autoCalculateIfResultShown);
+        field.addEventListener("change", autoCalculateIfResultShown);
+      });
+    }
+
+    function connectAllAutoCalculate() {
+      document.querySelectorAll("input, select").forEach(function(field) {
+        field.addEventListener("input", autoCalculateIfResultShown);
+        field.addEventListener("change", autoCalculateIfResultShown);
+      });
+    }
+
+    function toggleHelp(helpId) {
+      const helpBox = document.getElementById(helpId);
+
+      if (helpBox) {
+        helpBox.classList.toggle("is-open");
+      }
+    }
+
+    function escapeHtmlAttribute(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function getCurrentTheme() {
+      return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    }
+
+    function applyTheme(theme) {
+      if (theme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+      }
+
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+    }
+
+    function toggleTheme() {
+      var nextTheme = getCurrentTheme() === "dark" ? "light" : "dark";
+      applyTheme(nextTheme);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      initNavigation();
+      loadCostItems();
+      connectAllAutoCalculate();
+      document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+    });
+  </script>
+
+</body>
+</html>
